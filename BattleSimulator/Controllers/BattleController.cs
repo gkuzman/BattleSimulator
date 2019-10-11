@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Controllers
@@ -7,6 +8,12 @@ namespace BattleSimulator.Controllers
     [ApiController]
     public class BattleController : ControllerBase
     {
+        private readonly ILogger<BattleController> _logger;
+
+        public BattleController(ILogger<BattleController> logger)
+        {
+            _logger = logger;
+        }
         [HttpPost]
         // TODO: strategy to enum
         public async Task<ActionResult> AddArmy(string name, int units, string strategy)
@@ -24,6 +31,7 @@ namespace BattleSimulator.Controllers
         [HttpGet("{battleId}")]
         public async Task<ActionResult> GetLog(int battleId)
         {
+            _logger.LogInformation("hello from logger");
             return await Task.FromResult(Ok());
         }
 
