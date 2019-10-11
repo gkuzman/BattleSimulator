@@ -1,4 +1,5 @@
-﻿using BattleSimulator.Services.Pipelines;
+﻿using BattleSimulator.DAL.Contexts;
+using BattleSimulator.Services.Pipelines;
 using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
 using BattleSimulator.Services.Services;
@@ -6,6 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,6 +30,15 @@ namespace BattleSimulator
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddDbContextPool<TrackingContext>(options =>
+            {
+                options.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
+            });
+
+            services.AddDbContextPool<NonTrackingContext>(options =>
+            {
+                options.UseLazyLoadingProxies().UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
+            });
 
             services.AddMediatR((config) =>
             {
