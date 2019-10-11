@@ -5,6 +5,12 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleSimulator", "BattleSimulator\BattleSimulator.csproj", "{74D8B78B-0E96-4E32-87F6-25BD365B663F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleSimulator.Services", "BattleSimulator.Services\BattleSimulator.Services.csproj", "{180EFB6D-CA49-447A-847E-886139EEE1DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleSimulator.DAL", "BattleSimulator.DAL\BattleSimulator.DAL.csproj", "{B1780A67-2FFF-4AE3-9AB1-5807CDB519F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleSimulator.Entities", "BattleSimulator.Entities\BattleSimulator.Entities.csproj", "{C71BD37A-766E-494B-99F4-6CB1B37AA0A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{74D8B78B-0E96-4E32-87F6-25BD365B663F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74D8B78B-0E96-4E32-87F6-25BD365B663F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74D8B78B-0E96-4E32-87F6-25BD365B663F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{180EFB6D-CA49-447A-847E-886139EEE1DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{180EFB6D-CA49-447A-847E-886139EEE1DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{180EFB6D-CA49-447A-847E-886139EEE1DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{180EFB6D-CA49-447A-847E-886139EEE1DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1780A67-2FFF-4AE3-9AB1-5807CDB519F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1780A67-2FFF-4AE3-9AB1-5807CDB519F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1780A67-2FFF-4AE3-9AB1-5807CDB519F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1780A67-2FFF-4AE3-9AB1-5807CDB519F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C71BD37A-766E-494B-99F4-6CB1B37AA0A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C71BD37A-766E-494B-99F4-6CB1B37AA0A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C71BD37A-766E-494B-99F4-6CB1B37AA0A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C71BD37A-766E-494B-99F4-6CB1B37AA0A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
