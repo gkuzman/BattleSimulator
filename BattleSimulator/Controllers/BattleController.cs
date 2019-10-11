@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BattleSimulator.Services.Requests;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
@@ -8,12 +10,13 @@ namespace BattleSimulator.Controllers
     [ApiController]
     public class BattleController : ControllerBase
     {
-        private readonly ILogger<BattleController> _logger;
+        private readonly IMediator _mediator;
 
-        public BattleController(ILogger<BattleController> logger)
+        public BattleController(IMediator mediator)
         {
-            _logger = logger;
+            _mediator = mediator;
         }
+
         [HttpPost]
         // TODO: strategy to enum
         public async Task<ActionResult> AddArmy(string name, int units, string strategy)
@@ -31,7 +34,8 @@ namespace BattleSimulator.Controllers
         [HttpGet("{battleId}")]
         public async Task<ActionResult> GetLog(int battleId)
         {
-            _logger.LogInformation("hello from logger");
+            var request = new AddArmyRequest();
+            var result = await _mediator.Send(request);
             return await Task.FromResult(Ok());
         }
 
