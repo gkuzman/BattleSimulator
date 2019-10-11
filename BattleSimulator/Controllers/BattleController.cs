@@ -48,7 +48,7 @@ namespace BattleSimulator.Controllers
 
         private ActionResult ProcessResult<T>(T result) where T : ResponseBase
         {
-            if (result.OperationSuccessful && result.ErrorMessages.Count == 0)
+            if (!result.HasErrors)
             {
                 return Ok(result);
             }

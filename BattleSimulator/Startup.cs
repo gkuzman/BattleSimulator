@@ -1,4 +1,5 @@
 ﻿using BattleSimulator.DAL.Contexts;
+using BattleSimulator.Entities.Options;
 using BattleSimulator.Services.Pipelines;
 using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
@@ -18,10 +19,15 @@ namespace BattleSimulator
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+
             Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
-            Configuration = configuration;
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -48,6 +54,8 @@ namespace BattleSimulator
             );
 
             services.AddTransient(typeof(IPipelineBehavior<AddArmyRequest, AddArmyResponse>), typeof(AddArmyPipeline));
+
+            services.Configure<ArmyOptions>(options => Configuration.GetSection("ArmyOptions").Bind(options));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

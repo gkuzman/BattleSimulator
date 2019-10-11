@@ -1,8 +1,10 @@
 ﻿using BattleSimulator.Entities.Enums;
+using BattleSimulator.Entities.Options;
 using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,10 +13,12 @@ namespace BattleSimulator.Services.Pipelines
     public class AddArmyPipeline : IPipelineBehavior<AddArmyRequest, AddArmyResponse>
     {
         private readonly ILogger<AddArmyPipeline> _logger;
+        private readonly IOptions<ArmyOptions> _options;
 
-        public AddArmyPipeline(ILogger<AddArmyPipeline> logger)
+        public AddArmyPipeline(ILogger<AddArmyPipeline> logger, IOptions<ArmyOptions> options)
         {
             _logger = logger;
+            _options = options;
         }
         public async Task<AddArmyResponse> Handle(AddArmyRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<AddArmyResponse> next)
         {
@@ -28,7 +32,7 @@ namespace BattleSimulator.Services.Pipelines
             }
             else
             {
-                result = new AddArmyResponse { OperationSuccessful = false };
+                result = new AddArmyResponse();
                 result.ErrorMessages.Add(message);
                 _logger.LogError("Invalid request");
             }
@@ -38,10 +42,11 @@ namespace BattleSimulator.Services.Pipelines
 
         private bool IsRequestValid(AddArmyRequest request, out string message)
         {
-            // TODO: read from options
-            if (request.Units < 80 && request.Units > 100)
+            var minUnits = _options.Value.MinUnits;
+            var maxUnits = _options.Value.MaxUnits;
+            if (request.Units < minUnits && request.Units > maxUnits)
             {
-                message = "Please provide number of units between 80 and 100";
+                message = $"Please provide number of units between {minUnits} and {maxUnits}";
                 return false;
             }
             if (request.Strategy == Strategy.None)
