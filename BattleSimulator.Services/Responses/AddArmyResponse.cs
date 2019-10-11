@@ -4,8 +4,8 @@ using System.Text;
 
 namespace BattleSimulator.Services.Responses
 {
-    public class AddArmyResponse
+    public class AddArmyResponse : ResponseBase
     {
-
+        
     }
 }

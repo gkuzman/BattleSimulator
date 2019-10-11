@@ -1,4 +1,6 @@
-﻿using BattleSimulator.Services.Requests;
+﻿using BattleSimulator.Entities.Enums;
+using BattleSimulator.Services.Requests;
+using BattleSimulator.Services.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,10 +20,11 @@ namespace BattleSimulator.Controllers
         }
 
         [HttpPost]
-        // TODO: strategy to enum
-        public async Task<ActionResult> AddArmy(string name, int units, string strategy)
+        public async Task<ActionResult<AddArmyResponse>> AddArmy(AddArmyRequest request)
         {
-            return await Task.FromResult(Ok());
+            var result = await _mediator.Send(request);
+
+            return ProcessResult(result);
         }
 
         // Seems that PUT is the most appropriate one, debatable with POST. Definitely not GET.
@@ -34,8 +37,6 @@ namespace BattleSimulator.Controllers
         [HttpGet("{battleId}")]
         public async Task<ActionResult> GetLog(int battleId)
         {
-            var request = new AddArmyRequest();
-            var result = await _mediator.Send(request);
             return await Task.FromResult(Ok());
         }
 
@@ -43,6 +44,18 @@ namespace BattleSimulator.Controllers
         public async Task<ActionResult> Reset()
         {
             return await Task.FromResult(Ok());
+        }
+
+        private ActionResult ProcessResult<T>(T result) where T : ResponseBase
+        {
+            if (result.OperationSuccessful && result.ErrorMessages.Count == 0)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
         }
     }
 }

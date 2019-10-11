@@ -6,7 +6,7 @@ namespace BattleSimulator.Services.Responses
 {
     public abstract class ResponseBase
     {
-        public List<string> Messages { get; set; }
-        public List<string> ErrorMessages { get; set; }
+        public List<string> ErrorMessages { get; set; } = new List<string>();
+        public bool OperationSuccessful { get; set; }
     }
 }
