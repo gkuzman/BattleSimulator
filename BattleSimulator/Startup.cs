@@ -54,7 +54,9 @@ namespace BattleSimulator
                 Assembly.GetAssembly(typeof(AddArmyService))
             );
 
+            
             services.AddTransient(typeof(IPipelineBehavior<AddArmyRequest, AddArmyResponse>), typeof(AddArmyPipeline));
+            services.Decorate(typeof(IRequestHandler<,>), typeof(ProcessingPipeline<,>));
 
             services.Scan(scan =>
             {

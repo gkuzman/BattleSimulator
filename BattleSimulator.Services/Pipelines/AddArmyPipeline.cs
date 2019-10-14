@@ -22,41 +22,35 @@ namespace BattleSimulator.Services.Pipelines
         }
         public async Task<AddArmyResponse> Handle(AddArmyRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<AddArmyResponse> next)
         {
-            AddArmyResponse result;
+            var result = new AddArmyResponse();
 
-            if (IsRequestValid(request, out string message))
+            if (IsRequestValid(request, result))
             {
-                _logger.LogInformation(message);
+                _logger.LogInformation($"Attempting to add an army with the name: {request.Name}, number of units: {request.Units} and attack strategy: {request.Strategy}.");
                 result = await next();
-                _logger.LogInformation("Army added");
             }
             else
             {
-                result = new AddArmyResponse();
-                result.ErrorMessages.Add(message);
-                _logger.LogError("Invalid request");
+                _logger.LogError($"Invalid request: {result.ErrorMessages.GetErrorMessagesFormated()}");
             }
             
             return result;
         }
 
-        private bool IsRequestValid(AddArmyRequest request, out string message)
+        private bool IsRequestValid(AddArmyRequest request, AddArmyResponse result)
         {
             var minUnits = _options.Value.MinUnits;
             var maxUnits = _options.Value.MaxUnits;
-            if (request.Units < minUnits && request.Units > maxUnits)
+            if (request.Units < minUnits || request.Units > maxUnits)
             {
-                message = $"Please provide number of units between {minUnits} and {maxUnits}";
-                return false;
+                result.ErrorMessages.Add($"Please provide number of units between {minUnits} and {maxUnits}");
             }
             if (request.Strategy == Strategy.None)
             {
-                message = "Please provide correct attack strategy";
-                return false;
+                result.ErrorMessages.Add("Please provide correct attack strategy");
             }
 
-            message = $"Attempting to add an army with the name: {request.Name}, number of units: {request.Units} and attack strategy: {request.Strategy}.";
-            return true;
+            return result.ErrorMessages.Count == 0;
         }
     }
 }
