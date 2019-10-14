@@ -22,7 +22,7 @@ namespace BattleSimulator.Services.Pipelines
         }
         public async Task<AddArmyResponse> Handle(AddArmyRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<AddArmyResponse> next)
         {
-            var result = default(AddArmyResponse);
+            AddArmyResponse result;
 
             if (IsRequestValid(request, out string message))
             {

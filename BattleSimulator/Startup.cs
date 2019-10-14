@@ -1,5 +1,6 @@
 ﻿using BattleSimulator.DAL.Contexts;
 using BattleSimulator.Entities.Options;
+using BattleSimulator.Services.Interfaces;
 using BattleSimulator.Services.Pipelines;
 using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
@@ -38,12 +39,12 @@ namespace BattleSimulator
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContextPool<TrackingContext>(options =>
             {
-                options.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
+                options.UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
             });
 
             services.AddDbContextPool<NonTrackingContext>(options =>
             {
-                options.UseLazyLoadingProxies().UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
             });
 
             services.AddMediatR((config) =>
@@ -54,6 +55,13 @@ namespace BattleSimulator
             );
 
             services.AddTransient(typeof(IPipelineBehavior<AddArmyRequest, AddArmyResponse>), typeof(AddArmyPipeline));
+
+            services.Scan(scan =>
+            {
+                scan.FromAssembliesOf(typeof(ITransientService))
+                .AddClasses(x => x.AssignableTo(typeof(ITransientService)))
+                .AsImplementedInterfaces().WithTransientLifetime();
+            });
 
             services.Configure<ArmyOptions>(options => Configuration.GetSection("ArmyOptions").Bind(options));
         }

@@ -1,9 +1,7 @@
-﻿using BattleSimulator.Entities.Enums;
-using BattleSimulator.Services.Requests;
+﻿using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Controllers
