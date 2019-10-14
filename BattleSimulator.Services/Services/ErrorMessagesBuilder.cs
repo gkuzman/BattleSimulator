@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BattleSimulator.Services
+namespace BattleSimulator.Services.Services
 {
     public static class ErrorMessagesBuilder
     {

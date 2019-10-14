@@ -1,10 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using BattleSimulator.Entities.DB;
+using BattleSimulator.Entities.Enums;
+using System.Threading.Tasks;
 
 namespace BattleSimulator.Services.Interfaces
 {
     public interface IBattleRepository : ITransientService
     {
-        Task<int> GetInitializingBattleIdAsync();
+        Task<Battle> GetInitializingBattleAsync();
         Task<int> CreateBattleAsync();
+        Task<bool> ChangeBattleStatus(int battleId, BattleStatus battleStatus);
     }
 }

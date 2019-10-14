@@ -5,6 +5,7 @@ using BattleSimulator.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Services.Services
@@ -26,14 +27,15 @@ namespace BattleSimulator.Services.Services
         public async Task<bool> AddAnArmyAsync(Army request)
         {
             _logger.LogInformation($"Attempting to add an army with name: {request.Name} to the database...");
-            request.BattleId = await _battleRepository.GetInitializingBattleIdAsync();
+            var battle = await _battleRepository.GetInitializingBattleAsync();
+            request.BattleId = battle?.Id ?? 0;
 
-            if (request.BattleId < 1)
+            if (battle is null)
             {
                 request.BattleId = await _battleRepository.CreateBattleAsync();
             }
 
-            if (await _nonTrackingContext.Armies.FindAsync(request.Name, request.BattleId) != null)
+            if (battle?.Armies?.Count(x => x.BattleId == request.BattleId && x.Name == request.Name) > 0)
             {
                 throw new Exception($"An army with the name {request.Name} already exist for the current battle. Please choose another army name.");
             }
@@ -43,7 +45,7 @@ namespace BattleSimulator.Services.Services
 
             if (result > 0)
             {
-                _logger.LogInformation($"Adding an army with name: {request.Name} successfull...");
+                _logger.LogInformation($"Adding an army with name: {request.Name} successful...");
                 return true;
             }
             else

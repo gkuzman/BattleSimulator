@@ -29,7 +29,10 @@ namespace BattleSimulator.Controllers
         [HttpPut]
         public async Task<ActionResult> Start()
         {
-            return await Task.FromResult(Ok());
+            var request = new StartGameRequest();
+            var result = await _mediator.Send(request);
+
+            return ProcessResult(result);
         }
 
         [HttpGet("{battleId}")]

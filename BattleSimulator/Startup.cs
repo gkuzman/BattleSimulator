@@ -66,6 +66,7 @@ namespace BattleSimulator
             });
 
             services.Configure<ArmyOptions>(options => Configuration.GetSection("ArmyOptions").Bind(options));
+            services.Configure<BattleOptions>(options => Configuration.GetSection("BattleOptions").Bind(options));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

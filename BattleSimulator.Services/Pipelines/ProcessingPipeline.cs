@@ -1,5 +1,6 @@
 ﻿using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
+using BattleSimulator.Services.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
