@@ -40,6 +40,8 @@ namespace BattleSimulator
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            // EF
             services.AddDbContextPool<TrackingContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
@@ -50,6 +52,7 @@ namespace BattleSimulator
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseSqlServer(Configuration.GetConnectionString("TrackingContext"));
             });
 
+            // Mediator
             services.AddMediatR((config) =>
             {
                 config.AsTransient();
@@ -58,6 +61,8 @@ namespace BattleSimulator
             );
 
             services.AddTransient(typeof(IPipelineBehavior<AddArmyRequest, AddArmyResponse>), typeof(AddArmyPipeline));
+
+            // Scrutor
             services.Decorate(typeof(IRequestHandler<,>), typeof(ProcessingPipeline<,>));
 
             services.Scan(scan =>
@@ -67,13 +72,15 @@ namespace BattleSimulator
                 .AsImplementedInterfaces().WithTransientLifetime();
             });
 
+            // IOptions
             services.Configure<ArmyOptions>(options => Configuration.GetSection("ArmyOptions").Bind(options));
             services.Configure<BattleOptions>(options => Configuration.GetSection("BattleOptions").Bind(options));
 
+            // Hangfire
             var hangfireSqlOptions = new SqlServerStorageOptions
             {
                 QueuePollInterval = TimeSpan.Zero,
-                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                SlidingInvisibilityTimeout = TimeSpan.FromSeconds(1),
             };
 
             services.AddHangfire(hf =>
@@ -102,8 +109,15 @@ namespace BattleSimulator
             loggerFactory.AddSerilog();
             app.UseHttpsRedirection();
 
+            // run migrations initialy
+            using (var dbContext = serviceProvider.GetService<TrackingContext>())
+            {
+                dbContext.Database.Migrate();
+            };
+
             GlobalConfiguration.Configuration.UseActivator(new ContainerJobActivator(serviceProvider));
             app.UseHangfireServer();
+           
             app.UseMvc();
         }
     }

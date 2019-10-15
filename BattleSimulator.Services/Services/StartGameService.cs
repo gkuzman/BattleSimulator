@@ -37,16 +37,17 @@ namespace BattleSimulator.Services.Services
             if (battle is null)
             {
                 result.ErrorMessages.Add("There is no battle ready to start. Please add armies to initialize battle.");
+                return result;
             }
             else if (battle.Armies?.Count() < _options.Value.MinimumArmies)
             {
                 result.ErrorMessages.Add($"Cannot start a game with less than {_options.Value.MinimumArmies} in battle. Please add more armies to the current battle.");
+                return result;
             }
 
             //TODO start job
             var a = await _battleRepository.ChangeBattleStatus(battle.Id, BattleStatus.InBattle);
-            _jobClient.Schedule<ITest>(tst => tst.TestF(), TimeSpan.FromSeconds(1));
-
+            var e = _jobClient.Schedule<ITest>(tst => tst.TestF(), TimeSpan.FromSeconds(1));
             return result;
         }
     }

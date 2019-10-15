@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace BattleSimulator.Services.Services
 {
@@ -16,7 +17,12 @@ namespace BattleSimulator.Services.Services
         }
         public void TestF()
         {
-            _logger.LogInformation("From hf job");
+            for (int i = 0; i < 1000; i++)
+            {
+                _logger.LogInformation($"From hf job{i}");
+                Thread.Sleep(1000);
+            }
+            
         }
     }
 }
