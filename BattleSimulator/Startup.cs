@@ -5,6 +5,8 @@ using BattleSimulator.Services.Pipelines;
 using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
 using BattleSimulator.Services.Services;
+using Hangfire;
+using Hangfire.SqlServer;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System;
 using System.Reflection;
 
 namespace BattleSimulator
@@ -54,7 +57,6 @@ namespace BattleSimulator
                 Assembly.GetAssembly(typeof(AddArmyService))
             );
 
-            
             services.AddTransient(typeof(IPipelineBehavior<AddArmyRequest, AddArmyResponse>), typeof(AddArmyPipeline));
             services.Decorate(typeof(IRequestHandler<,>), typeof(ProcessingPipeline<,>));
 
@@ -67,10 +69,25 @@ namespace BattleSimulator
 
             services.Configure<ArmyOptions>(options => Configuration.GetSection("ArmyOptions").Bind(options));
             services.Configure<BattleOptions>(options => Configuration.GetSection("BattleOptions").Bind(options));
+
+            var hangfireSqlOptions = new SqlServerStorageOptions
+            {
+                QueuePollInterval = TimeSpan.Zero,
+                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            };
+
+            services.AddHangfire(hf =>
+            {
+                hf.UseSerilogLogProvider();
+                hf.UseSqlServerStorage(Configuration.GetConnectionString("HangfireConnection"), hangfireSqlOptions);
+            });
+
+            services.AddTransient<IBackgroundJobClient>(src => 
+                new BackgroundJobClient(new SqlServerStorage(Configuration.GetConnectionString("HangfireConnection"), hangfireSqlOptions)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -81,9 +98,12 @@ namespace BattleSimulator
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            
             loggerFactory.AddSerilog();
             app.UseHttpsRedirection();
+
+            GlobalConfiguration.Configuration.UseActivator(new ContainerJobActivator(serviceProvider));
+            app.UseHangfireServer();
             app.UseMvc();
         }
     }
