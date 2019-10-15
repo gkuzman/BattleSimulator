@@ -72,7 +72,7 @@ namespace BattleSimulator.Services.Services
 
             var oldStatus = battle.BattleStatus;
             battle.BattleStatus = battleStatus;
-            _trackingContext.Battles.Update(battle);
+
             var result = await _trackingContext.SaveChangesAsync();
 
             if (result > 0)
