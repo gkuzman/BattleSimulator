@@ -55,7 +55,7 @@ namespace BattleSimulator.Services.Services
             }
         }
 
-        public async Task<bool> IsArmyAddingBlocked()
+        public async Task<bool> IsArmyAddingBlockedAsync()
         {
             return await _nonTrackingContext.Battles.AnyAsync(x => x.BattleStatus == BattleStatus.InBattle);
         }

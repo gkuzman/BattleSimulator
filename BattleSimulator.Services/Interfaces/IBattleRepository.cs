@@ -8,6 +8,6 @@ namespace BattleSimulator.Services.Interfaces
     {
         Task<Battle> GetInitializingBattleAsync();
         Task<int> CreateBattleAsync();
-        Task<bool> ChangeBattleStatus(int battleId, BattleStatus battleStatus);
+        Task<bool> UpdateBattleAsync(int battleId, BattleStatus battleStatus, string jobId = "");
     }
 }

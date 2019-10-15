@@ -1,5 +1,4 @@
-﻿using BattleSimulator.Entities.Enums;
-using BattleSimulator.Entities.Options;
+﻿using BattleSimulator.Entities.Options;
 using BattleSimulator.Services.Interfaces;
 using BattleSimulator.Services.Requests;
 using BattleSimulator.Services.Responses;
@@ -34,6 +33,7 @@ namespace BattleSimulator.Services.Services
             _logger.LogInformation("Attempting to start a game");
 
             var battle = await _battleRepository.GetInitializingBattleAsync();
+
             if (battle is null)
             {
                 result.ErrorMessages.Add("There is no battle ready to start. Please add armies to initialize battle.");
@@ -45,9 +45,9 @@ namespace BattleSimulator.Services.Services
                 return result;
             }
 
-            //TODO start job
-            var a = await _battleRepository.ChangeBattleStatus(battle.Id, BattleStatus.InBattle);
-            var e = _jobClient.Schedule<ITest>(tst => tst.TestF(), TimeSpan.FromSeconds(1));
+            var jobId =  _jobClient.Schedule<IGameService>(x => x.StartGameAsync(null, battle.Id), TimeSpan.Zero);
+
+            result.BattleId = battle.Id;
             return result;
         }
     }

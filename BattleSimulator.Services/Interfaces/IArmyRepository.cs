@@ -6,6 +6,6 @@ namespace BattleSimulator.Services.Interfaces
     public interface IArmyRepository : ITransientService
     {
         Task<bool> AddAnArmyAsync(Army request);
-        Task<bool> IsArmyAddingBlocked();
+        Task<bool> IsArmyAddingBlockedAsync();
     }
 }

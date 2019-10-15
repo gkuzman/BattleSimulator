@@ -8,5 +8,6 @@ namespace BattleSimulator.Entities.DB
         public int Id { get; set; }
         public virtual IEnumerable<Army> Armies { get; set; }
         public BattleStatus BattleStatus { get; set; }
+        public string JobId { get; set; }
     }
 }

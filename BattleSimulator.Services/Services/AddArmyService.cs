@@ -20,7 +20,7 @@ namespace BattleSimulator.Services.Services
         {
             var result = new AddArmyResponse();
 
-            if (await _armyRepository.IsArmyAddingBlocked())
+            if (await _armyRepository.IsArmyAddingBlockedAsync())
             {
                 result.ErrorMessages.Add("Currently, theres a battle in progress. Adding armies is not possible at the moment.");
                 return result;

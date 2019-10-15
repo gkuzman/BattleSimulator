@@ -3,14 +3,16 @@ using BattleSimulator.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BattleSimulator.DAL.Migrations.TrackingContext
 {
     [DbContext(typeof(BattleSimulator.DAL.Contexts.TrackingContext))]
-    partial class TrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20191015111406_UpdateBattleEntity")]
+    partial class UpdateBattleEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
