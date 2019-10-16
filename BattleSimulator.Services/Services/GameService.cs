@@ -3,6 +3,7 @@ using BattleSimulator.Entities.Enums;
 using BattleSimulator.Services.Interfaces;
 using Hangfire.Server;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

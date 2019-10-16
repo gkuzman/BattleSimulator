@@ -30,9 +30,11 @@ namespace BattleSimulator.Services.Services
                     ElapsedReloadTime = TimeSpan.Zero,
                     ReloadTimeTotal = TimeSpan.Zero,
                     Name = army.Name,
-                    Target = null,
+                    TargetName = string.Empty,
                     Units = army.Units
                 };
+
+                result.Add(dto);
             }
 
             return result;
