@@ -45,7 +45,7 @@ namespace BattleSimulator.Services.Services
                 return result;
             }
 
-            var jobId =  _jobClient.Schedule<IGameService>(x => x.StartGameAsync(null, battle.Id), TimeSpan.Zero);
+            _jobClient.Schedule<IGameService>(x => x.StartGameAsync(null, battle.Id), TimeSpan.Zero);
 
             result.BattleId = battle.Id;
             return result;

@@ -4,6 +4,8 @@ using BattleSimulator.Entities.Enums;
 using BattleSimulator.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Services.Services
@@ -20,6 +22,7 @@ namespace BattleSimulator.Services.Services
             _trackingContext = trackingContext;
             _logger = logger;
         }
+
         public async Task<Battle> GetInitializingBattleAsync()
         {
             var battle = await _nonTrackingContext.Battles.Include(b => b.Armies).FirstOrDefaultAsync(x => x.BattleStatus == BattleStatus.Initializing);
@@ -34,6 +37,24 @@ namespace BattleSimulator.Services.Services
             }
 
             return battle;
+        }
+
+        public async Task<BattleLog> GetBattleLog(int battleId, string jobId)
+        {
+            var query = _nonTrackingContext.BattleLogs.AsQueryable();
+            var latestLog = await query.OrderByDescending(x => x.ActionTaken)
+                .FirstOrDefaultAsync(x => x.BattleId == battleId && x.JobId == jobId);
+
+            if (latestLog is null)
+            {
+                _logger.LogWarning($"Existing battle log with battleId: {battleId} and jobId {jobId} not found");
+            }
+            else
+            {
+                _logger.LogInformation($"Found battle log with battleId: {battleId} and jobId {jobId}");
+            }
+
+            return latestLog;
         }
 
         public async Task<int> CreateBattleAsync()

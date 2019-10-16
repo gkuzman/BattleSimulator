@@ -1,4 +1,5 @@
 ﻿using BattleSimulator.Entities.DB;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Services.Interfaces
@@ -7,5 +8,6 @@ namespace BattleSimulator.Services.Interfaces
     {
         Task<bool> AddAnArmyAsync(Army request);
         Task<bool> IsArmyAddingBlockedAsync();
+        Task<List<Army>> GetArmiesAsync(int battleId);
     }
 }

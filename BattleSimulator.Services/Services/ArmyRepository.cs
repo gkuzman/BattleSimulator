@@ -5,6 +5,7 @@ using BattleSimulator.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -53,6 +54,22 @@ namespace BattleSimulator.Services.Services
                 _logger.LogError($"Adding an army with name: {request.Name} failed!");
                 return false;
             }
+        }
+
+        public async Task<List<Army>> GetArmiesAsync(int battleId)
+        {
+            var result = await _nonTrackingContext.Armies.Where(x => x.BattleId == battleId).ToListAsync();
+
+            if (result is null)
+            {
+                _logger.LogError($"Could not find armies for the battle with id: {battleId}.");
+            }
+            else
+            {
+                _logger.LogInformation($"Found {result.Count} armies for battle with id: {battleId}");
+            }
+
+            return result;
         }
 
         public async Task<bool> IsArmyAddingBlockedAsync()
