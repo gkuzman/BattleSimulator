@@ -23,7 +23,7 @@ namespace BattleSimulator.Services.Services
             if (battleUpdated)
             {
                 _logger.LogInformation($"Starting a game with battle id: {battleId} and hangfire job id {performContext.BackgroundJob.Id}");
-                //TODO start game
+                // TODO start game
             }
             else
             {
