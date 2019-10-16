@@ -13,15 +13,17 @@ namespace BattleSimulator.Services.Services
         private readonly IBattleRepository _battleRepository;
         private readonly IArmyRepository _armyRepository;
         private readonly ILogger<GameService> _logger;
+        private readonly IDbEntitiesToDtosMapper _mapper;
         private List<ArmyDTO> _armies = new List<ArmyDTO>();
         private int _battleId = 0;
         private string _jobId = string.Empty;
 
-        public GameService(IBattleRepository battleRepository, IArmyRepository armyRepository, ILogger<GameService> logger)
+        public GameService(IBattleRepository battleRepository, IArmyRepository armyRepository, ILogger<GameService> logger, IDbEntitiesToDtosMapper mapper)
         {
             _battleRepository = battleRepository;
             _armyRepository = armyRepository;
             _logger = logger;
+            _mapper = mapper;
         }
         public async Task StartGameAsync(PerformContext performContext, int battleId)
         {
@@ -45,11 +47,15 @@ namespace BattleSimulator.Services.Services
             var log = await _battleRepository.GetBattleLog(_battleId, _jobId);
             if (log != null)
             {
-                // TODO map
+                _armies.AddRange(_mapper.MapBattleLogToArmiesDtoList(log));
+                _logger.LogInformation($"Seems that the app crashed and the job resumed on restart. " +
+                    $"Entities are loaded from the latest log with battle id {log.BattleId}, job id {log.JobId} and time {log.LogTime}");
             }
             else
             {
                 var armies = await _armyRepository.GetArmiesAsync(_battleId);
+                _armies.AddRange(_mapper.MapDbArmiesToArmiesDtoList(armies));
+                _logger.LogInformation($"No battle log for battle with id: {_battleId} and job id: {_jobId} found. Starting battle from scratch!");
             }
         }
     }
