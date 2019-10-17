@@ -13,7 +13,5 @@ namespace BattleSimulator.Entities.BattleDTOs
         public TimeSpan ElapsedReloadTime { get; set; }
         public string TargetName { get; set; }
         public Strategy AttackStrategy { get; set; }
-
-        public bool IsAttacking { get; set; }
     }
 }
