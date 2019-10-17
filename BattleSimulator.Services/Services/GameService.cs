@@ -22,7 +22,7 @@ namespace BattleSimulator.Services.Services
         private List<ArmyDTO> _armies = new List<ArmyDTO>();
         private int _battleId = 0;
         private string _jobId = string.Empty;
-        private BlockingCollection<Task<ArmyDTO>> _tasks;
+        private BlockingCollection<Func<Task<ArmyDTO>>> _tasks;
 
         public GameService(IBattleRepository battleRepository,
             IArmyRepository armyRepository,
@@ -46,7 +46,7 @@ namespace BattleSimulator.Services.Services
             {
                 _logger.LogInformation($"Starting a game with battle id: {_battleId} and hangfire job id {_jobId}");
                 await LoadEntitiesAsync();
-                await StartTheBattle();
+                StartTheBattle();
             }
             else
             {
@@ -54,11 +54,11 @@ namespace BattleSimulator.Services.Services
             }
         }
 
-        private async Task StartTheBattle()
+        private void StartTheBattle()
         {
-            _tasks = new BlockingCollection<Task<ArmyDTO>>(new ConcurrentQueue<Task<ArmyDTO>>(), _armies.Count);
+            _tasks = new BlockingCollection<Func<Task<ArmyDTO>>>(new ConcurrentBag<Func<Task<ArmyDTO>>>(), _armies.Count);
             StartProducing();
-            await StartConsuming();
+            StartConsuming();
             _logger.LogInformation("eee");
 
             _logger.LogInformation("doneEeeeeeeeee");
@@ -68,37 +68,44 @@ namespace BattleSimulator.Services.Services
         {
             foreach (var army in _armies)
             {
-                _tasks.Add(Test(army));
+                _tasks.Add(async () => await AttackAsync(army));
             }
 
             _logger.LogInformation("doneEeeeeeeeee");
         }
 
-        private async Task StartConsuming()
+        private void StartConsuming()
         {
             foreach (var task in _tasks.GetConsumingEnumerable())
             {
                 _logger.LogInformation($"count = {_tasks.Count}");
-                var e = await task;
-                _logger.LogInformation($"{e.Name} count = {_tasks.Count}");
-                Enqueue(e);
-                
+                _ = task.Invoke().ContinueWith(x => { Enqueue(x.Result); });
             }
             _logger.LogInformation("pls");
         }
 
         private void Enqueue(ArmyDTO e)
         {
-            if (e.Units < 1)
+            if (_tasks.IsAddingCompleted)
             {
-                _tasks.CompleteAdding();
                 return;
             }
 
-            _tasks.Add(Test(e));
+            if (_armies.Count(x => x.Units > 0) < 2)
+            {
+                _logger.LogInformation("Battle finished");
+                _tasks.CompleteAdding();
+            }
+
+            if (e.Units < 1)
+            {
+                return;
+            }
+
+            _tasks.Add(async () => await AttackAsync(e));
         }
 
-        private async Task<ArmyDTO> Test(ArmyDTO army)
+        private async Task<ArmyDTO> AttackAsync(ArmyDTO army)
         {
             return await _battleProcessor.Attack(army, _armies);
         }
