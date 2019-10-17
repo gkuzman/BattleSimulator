@@ -3,7 +3,6 @@ using BattleSimulator.Entities.Enums;
 using BattleSimulator.Services.Interfaces;
 using Hangfire.Server;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -20,7 +19,7 @@ namespace BattleSimulator.Services.Services
         private readonly ILogger<GameService> _logger;
         private readonly IDbEntitiesToDtosMapper _mapper;
         private readonly IBattleProcessor _battleProcessor;
-        private List<ArmyDTO> _armies = new List<ArmyDTO>();
+        private readonly List<ArmyDTO> _armies = new List<ArmyDTO>();
         private int _battleId = 0;
         private string _jobId = string.Empty;
         private BlockingCollection<Func<Task<ArmyDTO>>> _tasks;
@@ -48,27 +47,33 @@ namespace BattleSimulator.Services.Services
             {
                 _logger.LogInformation($"Starting a game with battle id: {_battleId} and hangfire job id {_jobId}");
                 await LoadEntitiesAsync();
-                StartTheBattle();
-                
-                while (!_tasks.IsCompleted)
-                {
-                    // do not proceed until all tasks are run
-                }
 
+                using (_tasks = new BlockingCollection<Func<Task<ArmyDTO>>>(new ConcurrentQueue<Func<Task<ArmyDTO>>>(), _armies.Count))
+                {
+                    StartTheBattle();
+
+                    while (!_tasks.IsCompleted)
+                    {
+                        // do not proceed until all tasks are run
+                    }
+                }
                 _logger.LogInformation("doneEeeeeeeeee");
+
+                foreach (var item in _armies)
+                {
+                    _logger.LogInformation($"{item.Name} *** {item.Units}");
+                }
             }
             else
             {
                 _logger.LogInformation($"Unable to start a game with battle id: {_battleId} and hangfire job id {_jobId}");
             }
 
-            _tasks.Dispose();
             _cts.Dispose();
         }
 
         private void StartTheBattle()
         {
-            _tasks = new BlockingCollection<Func<Task<ArmyDTO>>>(new ConcurrentBag<Func<Task<ArmyDTO>>>(), _armies.Count);
             StartProducing();
             StartConsuming();
         }
@@ -85,8 +90,7 @@ namespace BattleSimulator.Services.Services
         {
             foreach (var task in _tasks.GetConsumingEnumerable())
             {
-                _logger.LogInformation($"count = {_tasks.Count}");
-                _ = task.Invoke().ContinueWith(x => 
+                _ = task.Invoke().ContinueWith(x =>
                 {
                     if (!_tasks.IsAddingCompleted)
                         Enqueue(x.Result);
@@ -108,7 +112,10 @@ namespace BattleSimulator.Services.Services
                 return;
             }
 
-            _tasks.Add(async () => await AttackAsync(army));
+            if (!_tasks.IsAddingCompleted || !_cts.IsCancellationRequested)
+            {
+                _tasks?.TryAdd(async () => await AttackAsync(army));
+            }
         }
 
         private async Task<ArmyDTO> AttackAsync(ArmyDTO army)
