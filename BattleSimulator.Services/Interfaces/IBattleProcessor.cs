@@ -9,6 +9,6 @@ namespace BattleSimulator.Services.Interfaces
 {
     public interface IBattleProcessor : ITransientService
     {
-        Task<ArmyDTO> Attack(ArmyDTO attacker, List<ArmyDTO> armies, CancellationToken cancellationToken);
+        Task<ArmyDTO> AttackAsync(ArmyDTO attacker, List<ArmyDTO> armies, int battleId, string jobId, CancellationToken cancellationToken);
     }
 }

@@ -1,8 +1,10 @@
 ﻿using BattleSimulator.Entities.BattleDTOs;
+using BattleSimulator.Entities.DB;
 using BattleSimulator.Entities.Options;
 using BattleSimulator.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,16 +19,19 @@ namespace BattleSimulator.Services.Services
         private readonly ILogger<BattleProcessor> _logger;
         private readonly IOptions<BattleOptions> _options;
         private readonly IAttackReloadService _reloadService;
+        private readonly IBattleLogRepository _logRepository;
         private ArmyDTO _attacker;
         private CancellationToken _cancellationToken;
+        private readonly StringBuilder _sb = new StringBuilder();
 
-        public BattleProcessor(ILogger<BattleProcessor> logger, IOptions<BattleOptions> options, IAttackReloadService attackReloadService)
+        public BattleProcessor(ILogger<BattleProcessor> logger, IOptions<BattleOptions> options, IAttackReloadService attackReloadService, IBattleLogRepository logRepository)
         {
             _logger = logger;
             _options = options;
             _reloadService = attackReloadService;
+            _logRepository = logRepository;
         }
-        public async Task<ArmyDTO> Attack(ArmyDTO attacker, List<ArmyDTO> armies, CancellationToken cancellationToken)
+        public async Task<ArmyDTO> AttackAsync(ArmyDTO attacker, List<ArmyDTO> armies, int battleId, string jobId, CancellationToken cancellationToken)
         {
             if (attacker.Units < 1)
             {
@@ -43,10 +48,25 @@ namespace BattleSimulator.Services.Services
 
             InitiateAttack(armies);
 
-            
-            _logger.LogInformation($"{_attacker.Name} finished");
             await _reloadService.ReloadAsync(_attacker, cancellationToken);
+            await SaveBattleLogAsync(armies, battleId, jobId);
             return ClearState(attacker);
+        }
+
+        private async Task SaveBattleLogAsync(List<ArmyDTO> armies, int battleId, string jobId)
+        {
+            var battleLog = new BattleLog
+            {
+                ActionTaken = _sb.ToString(),
+                BattleId = battleId,
+                JobId = jobId,
+                LogTime = DateTime.UtcNow,
+                BattleSnapshot = JsonConvert.SerializeObject(armies)
+            };
+
+            await _logRepository.InsertBattleLogAsync(battleLog, _cancellationToken);
+
+            _sb.Clear();
         }
 
         private void InitiateAttack(List<ArmyDTO> armies)
@@ -73,16 +93,45 @@ namespace BattleSimulator.Services.Services
 
             if (target != null && target.Units > 0)
             {
-                _logger.LogInformation($"{_attacker.Name} started attacking {_attacker.TargetName}");
-                target.Units -= 5;
+                var attackDamage = GetAttackDamage();
+
+                var startAttackLog = $"{_attacker.Name} started attacking {target.Name} with {target.Units} units.";
+                _logger.LogInformation(startAttackLog);
+                _sb.AppendLine(startAttackLog);
+
+                if (IsAttackSuccessful())
+                {
+                    var logSuccessfulAttack = $"{_attacker.Name} successfully attacks {target.Name}. {target.Name} takes {attackDamage} damage.";
+                    _sb.AppendLine(logSuccessfulAttack);
+                    _logger.LogInformation(logSuccessfulAttack);
+                    target.Units -= attackDamage;
+                }
+                else
+                {
+                    var logFailedAttack = $"{_attacker.Name} failed to attack {target.Name}. Attack missed!";
+                    _sb.AppendLine(logFailedAttack);
+                    _logger.LogInformation(logFailedAttack);
+                }
             }
+        }
+
+        private int GetAttackDamage()
+        {
+            var damage = _attacker.Units * _options.Value.DamagePerArmyUnit;
+            return (int)Math.Floor(damage);
+        }
+
+        private bool IsAttackSuccessful()
+        {
+            var rnd = new Random();
+            var roll = rnd.Next(1, 101);
+
+            return _attacker.Units * _options.Value.HitPercentagePerArmyUnit >= roll;
         }
 
         private ArmyDTO ClearState(ArmyDTO attacker)
         {
             attacker.TargetName = string.Empty;
-            attacker.ReloadTimeTotal = TimeSpan.Zero;
-            attacker.ElapsedReloadTime = TimeSpan.Zero;
 
             return attacker;
         }

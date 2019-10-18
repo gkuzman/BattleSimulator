@@ -125,7 +125,7 @@ namespace BattleSimulator.Services.Services
 
         private async Task<ArmyDTO> AttackAsync(ArmyDTO army)
         {
-            return await _battleProcessor.Attack(army, _armies, _cts.Token);
+            return await _battleProcessor.AttackAsync(army, _armies, _battleId, _jobId, _cts.Token);
         }
 
         private async Task LoadEntitiesAsync()
