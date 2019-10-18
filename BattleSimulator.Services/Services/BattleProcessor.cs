@@ -19,23 +19,21 @@ namespace BattleSimulator.Services.Services
         private readonly ILogger<BattleProcessor> _logger;
         private readonly IOptions<BattleOptions> _options;
         private readonly IAttackReloadService _reloadService;
-        private readonly IBattleLogRepository _logRepository;
         private ArmyDTO _attacker;
         private CancellationToken _cancellationToken;
         private readonly StringBuilder _sb = new StringBuilder();
 
-        public BattleProcessor(ILogger<BattleProcessor> logger, IOptions<BattleOptions> options, IAttackReloadService attackReloadService, IBattleLogRepository logRepository)
+        public BattleProcessor(ILogger<BattleProcessor> logger, IOptions<BattleOptions> options, IAttackReloadService attackReloadService)
         {
             _logger = logger;
             _options = options;
             _reloadService = attackReloadService;
-            _logRepository = logRepository;
         }
-        public async Task<ArmyDTO> AttackAsync(ArmyDTO attacker, List<ArmyDTO> armies, int battleId, string jobId, CancellationToken cancellationToken)
+        public async Task<(ArmyDTO, BattleLog)> AttackAsync(ArmyDTO attacker, List<ArmyDTO> armies, int battleId, string jobId, CancellationToken cancellationToken)
         {
             if (attacker.Units < 1)
             {
-                return attacker;
+                return (attacker, null);
             }
 
             _cancellationToken = cancellationToken;
@@ -43,17 +41,17 @@ namespace BattleSimulator.Services.Services
 
             if (cancellationToken.IsCancellationRequested)
             {
-                return ClearState(attacker);
+                return (ClearState(attacker), null);
             }
 
             InitiateAttack(armies);
 
             await _reloadService.ReloadAsync(_attacker, cancellationToken);
-            await SaveBattleLogAsync(armies, battleId, jobId);
-            return ClearState(attacker);
+            
+            return (ClearState(attacker), CreateBatteLog(armies, battleId, jobId));
         }
 
-        private async Task SaveBattleLogAsync(List<ArmyDTO> armies, int battleId, string jobId)
+        private BattleLog CreateBatteLog(List<ArmyDTO> armies, int battleId, string jobId)
         {
             var battleLog = new BattleLog
             {
@@ -64,9 +62,9 @@ namespace BattleSimulator.Services.Services
                 BattleSnapshot = JsonConvert.SerializeObject(armies)
             };
 
-            await _logRepository.InsertBattleLogAsync(battleLog, _cancellationToken);
-
             _sb.Clear();
+
+            return battleLog;
         }
 
         private void InitiateAttack(List<ArmyDTO> armies)

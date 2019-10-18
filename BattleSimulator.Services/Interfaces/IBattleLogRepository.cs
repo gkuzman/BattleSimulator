@@ -9,6 +9,6 @@ namespace BattleSimulator.Services.Interfaces
 {
     public interface IBattleLogRepository : ITransientService
     {
-        Task InsertBattleLogAsync(BattleLog battleLog, CancellationToken cancellationToken);
+        Task<IEnumerable<BattleLog>> InsertBattleLogAsync(IEnumerable<BattleLog> battleLogs);
     }
 }

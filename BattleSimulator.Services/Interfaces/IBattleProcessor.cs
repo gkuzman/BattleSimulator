@@ -1,4 +1,5 @@
 ﻿using BattleSimulator.Entities.BattleDTOs;
+using BattleSimulator.Entities.DB;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +10,6 @@ namespace BattleSimulator.Services.Interfaces
 {
     public interface IBattleProcessor : ITransientService
     {
-        Task<ArmyDTO> AttackAsync(ArmyDTO attacker, List<ArmyDTO> armies, int battleId, string jobId, CancellationToken cancellationToken);
+        Task<(ArmyDTO, BattleLog)> AttackAsync(ArmyDTO attacker, List<ArmyDTO> armies, int battleId, string jobId, CancellationToken cancellationToken);
     }
 }
