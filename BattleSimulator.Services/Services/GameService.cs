@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,12 +58,16 @@ namespace BattleSimulator.Services.Services
                         // do not proceed until all tasks are run
                     }
                 }
-                _logger.LogInformation("doneEeeeeeeeee");
 
-                foreach (var item in _armies)
+                var sb = new StringBuilder();
+                foreach (var army in _armies)
                 {
-                    _logger.LogInformation($"{item.Name} *** {item.Units}");
+                    sb.AppendLine($"{army.Name} finished the battle with {army.Units}");
                 }
+
+                _logger.LogInformation(sb.ToString());
+
+                await _battleRepository.UpdateBattleAsync(_battleId, BattleStatus.Finished, _jobId);
             }
             else
             {
