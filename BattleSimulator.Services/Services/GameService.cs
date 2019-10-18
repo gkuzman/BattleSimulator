@@ -114,11 +114,7 @@ namespace BattleSimulator.Services.Services
         {
             if (battleLogs.Any())
             {
-                var result = await _battleLogRepository.InsertBattleLogAsync(battleLogs);
-                foreach (var notSavedLog in result)
-                {
-                    _battleLogs.Enqueue(notSavedLog);
-                }
+                await _battleLogRepository.InsertBattleLogAsync(battleLogs);
             }
         }
 
@@ -132,8 +128,10 @@ namespace BattleSimulator.Services.Services
 
         private void Enqueue((ArmyDTO army, BattleLog battleLog) parameters)
         {
-            _battleLogs.Enqueue(parameters.battleLog);
-
+            if (parameters.battleLog != null)
+            {
+                _battleLogs.Enqueue(parameters.battleLog);
+            }
             if (_armies.Count(x => x.Units > 0) < 2)
             {
                 _logger.LogInformation("Battle finished");

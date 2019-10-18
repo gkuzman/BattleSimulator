@@ -21,7 +21,6 @@ namespace BattleSimulator.Services.Services
         private readonly IAttackReloadService _reloadService;
         private ArmyDTO _attacker;
         private CancellationToken _cancellationToken;
-        private readonly StringBuilder _sb = new StringBuilder();
 
         public BattleProcessor(ILogger<BattleProcessor> logger, IOptions<BattleOptions> options, IAttackReloadService attackReloadService)
         {
@@ -44,39 +43,40 @@ namespace BattleSimulator.Services.Services
                 return (ClearState(attacker), null);
             }
 
-            InitiateAttack(armies);
+            InitiateAttack(armies, out var attackLogs);
 
             await _reloadService.ReloadAsync(_attacker, cancellationToken);
             
-            return (ClearState(attacker), CreateBatteLog(armies, battleId, jobId));
+            return (ClearState(attacker), CreateBatteLog(armies, battleId, jobId, attackLogs));
         }
 
-        private BattleLog CreateBatteLog(List<ArmyDTO> armies, int battleId, string jobId)
+        private BattleLog CreateBatteLog(List<ArmyDTO> armies, int battleId, string jobId, List<string> logs)
         {
             var battleLog = new BattleLog
             {
-                ActionTaken = _sb.ToString(),
+                ActionTaken = string.Join(" ", logs),
                 BattleId = battleId,
                 JobId = jobId,
                 LogTime = DateTime.UtcNow,
                 BattleSnapshot = JsonConvert.SerializeObject(armies)
             };
 
-            _sb.Clear();
-
             return battleLog;
         }
 
-        private void InitiateAttack(List<ArmyDTO> armies)
+        private void InitiateAttack(List<ArmyDTO> armies, out List<string> logs)
         {
+            logs = new List<string>();
             if (_cancellationToken.IsCancellationRequested)
             {
+                logs.Add($"{_attacker.Name} tried to start the attack but the game is over.");
                 return;
             }
 
             // game over
             if (armies.Count(x => x.Units > 0) < 2)
             {
+                logs.Add($"{_attacker.Name} tried to start the attack but the game is over.");
                 return;
             }
 
@@ -89,25 +89,25 @@ namespace BattleSimulator.Services.Services
 
             var target = armies.FirstOrDefault(x => x.Name == _attacker.TargetName);
 
-            if (target != null && target.Units > 0)
+            if (target != null)
             {
                 var attackDamage = GetAttackDamage();
 
                 var startAttackLog = $"{_attacker.Name} started attacking {target.Name} with {target.Units} units.";
                 _logger.LogInformation(startAttackLog);
-                _sb.AppendLine(startAttackLog);
+                logs.Add(startAttackLog);
 
                 if (IsAttackSuccessful())
                 {
                     var logSuccessfulAttack = $"{_attacker.Name} successfully attacks {target.Name}. {target.Name} takes {attackDamage} damage.";
-                    _sb.AppendLine(logSuccessfulAttack);
+                    logs.Add(logSuccessfulAttack);
                     _logger.LogInformation(logSuccessfulAttack);
                     target.Units -= attackDamage;
                 }
                 else
                 {
                     var logFailedAttack = $"{_attacker.Name} failed to attack {target.Name}. Attack missed!";
-                    _sb.AppendLine(logFailedAttack);
+                    logs.Add(logFailedAttack);
                     _logger.LogInformation(logFailedAttack);
                 }
             }

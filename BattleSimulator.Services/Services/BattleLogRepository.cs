@@ -20,7 +20,7 @@ namespace BattleSimulator.Services.Services
             _trackingContext = trackingContext;
             _logger = logger;
         }
-        public async Task<IEnumerable<BattleLog>> InsertBattleLogAsync(IEnumerable<BattleLog> battleLogs)
+        public async Task InsertBattleLogAsync(IEnumerable<BattleLog> battleLogs)
         {
             await _trackingContext.BattleLogs.AddRangeAsync(battleLogs);
             var result = await _trackingContext.SaveChangesAsync();
@@ -28,12 +28,6 @@ namespace BattleSimulator.Services.Services
             if (result > 0)
             {
                 _logger.LogInformation($"BattleLogs saved in batch!");
-                return new List<BattleLog>();
-            }
-            else
-            {
-                _logger.LogError($"BattleLogs failed to be saved in batch!");
-                return battleLogs;
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using BattleSimulator.Entities.DB;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -9,6 +10,6 @@ namespace BattleSimulator.Services.Interfaces
 {
     public interface IBattleLogRepository : ITransientService
     {
-        Task<IEnumerable<BattleLog>> InsertBattleLogAsync(IEnumerable<BattleLog> battleLogs);
+        Task InsertBattleLogAsync(IEnumerable<BattleLog> battleLogs);
     }
 }
