@@ -39,11 +39,12 @@ namespace BattleSimulator.Services.Services
                 }
                 else
                 {
+                    _logger.LogInformation($"{attacker.Name} has reloaded...");
                     break;
                 }
             }
 
-            _logger.LogInformation($"{attacker.Name} has reloaded...");
+            
             attacker.ElapsedReloadTime = TimeSpan.Zero;
             attacker.ReloadTimeTotal = TimeSpan.Zero;
         }

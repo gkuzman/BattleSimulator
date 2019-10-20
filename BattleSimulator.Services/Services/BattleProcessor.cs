@@ -141,13 +141,13 @@ namespace BattleSimulator.Services.Services
             {
                 switch (_attacker.AttackStrategy)
                 {
-                    case Entities.Enums.Strategy.Random:
+                    case Entities.Enums.Strategy.Strongest:
                         _attacker.TargetName = armies.Where(a => a.Units > 0 && a.Name != _attacker.Name)?.OrderByDescending(x => x.Units).FirstOrDefault()?.Name;
                         break;
                     case Entities.Enums.Strategy.Weakest:
                         _attacker.TargetName = armies.Where(a => a.Units > 0 && a.Name != _attacker.Name)?.OrderBy(x => x.Units).FirstOrDefault()?.Name;
                         break;
-                    case Entities.Enums.Strategy.Strongest:
+                    case Entities.Enums.Strategy.Random:
                         _attacker.TargetName = armies.Where(a => a.Units > 0 && a.Name != _attacker.Name)?.OrderBy(x => Guid.NewGuid()).FirstOrDefault()?.Name;
                         break;
                     case Entities.Enums.Strategy.None:
