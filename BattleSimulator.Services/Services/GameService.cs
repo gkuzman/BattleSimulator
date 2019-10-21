@@ -26,8 +26,10 @@ namespace BattleSimulator.Services.Services
         private int _battleId = 0;
         private string _jobId = string.Empty;
         private BlockingCollection<Func<Task<(ArmyDTO, BattleLog)>>> _tasks;
+        private int _test;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ConcurrentQueue<BattleLog> _battleLogs = new ConcurrentQueue<BattleLog>();
+        private readonly List<BattleLog> _battleLogList = new List<BattleLog>();
 
         public GameService(IBattleRepository battleRepository,
             IArmyRepository armyRepository,
@@ -63,6 +65,9 @@ namespace BattleSimulator.Services.Services
                         // do not proceed until all tasks are run
                     }
                 }
+
+                GetBattleLogs();
+                await _battleLogRepository.InsertBattleLogAsync(_battleLogList);
 
                 var sb = new StringBuilder();
                 foreach (var army in _armies)
@@ -100,8 +105,8 @@ namespace BattleSimulator.Services.Services
         {
             foreach (var task in _tasks.GetConsumingEnumerable())
             {
-                var battleLogs = GetBattleLogs();
-                await SaveLogsInBatch(battleLogs);
+                GetBattleLogs();
+                await SaveLogsInBatch();
                 _ = task.Invoke().ContinueWith(x =>
                 {
                     if (!_tasks.IsAddingCompleted)
@@ -110,19 +115,20 @@ namespace BattleSimulator.Services.Services
             }
         }
 
-        private async Task SaveLogsInBatch(IEnumerable<BattleLog> battleLogs)
+        private async ValueTask SaveLogsInBatch()
         {
-            if (battleLogs.Any())
+            if (_battleLogList.Count() > 10)
             {
-                await _battleLogRepository.InsertBattleLogAsync(battleLogs);
+                await _battleLogRepository.InsertBattleLogAsync(_battleLogList);
+                _battleLogList.Clear();
             }
         }
 
-        private IEnumerable<BattleLog> GetBattleLogs()
+        private void GetBattleLogs()
         {
             while (_battleLogs.TryDequeue(out var battleLog))
             {
-                yield return battleLog;
+                _battleLogList.Add(battleLog);
             }
         }
 
