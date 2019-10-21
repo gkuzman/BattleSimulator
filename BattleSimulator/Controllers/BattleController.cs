@@ -38,7 +38,10 @@ namespace BattleSimulator.Controllers
         [HttpGet("{battleId}")]
         public async Task<ActionResult> GetLog(int battleId)
         {
-            return await Task.FromResult(Ok());
+            var request = new GetLogRequest { BattleId = battleId };
+            var result = await _mediator.Send(request);
+
+            return ProcessResult(result);
         }
 
         [HttpPut]
