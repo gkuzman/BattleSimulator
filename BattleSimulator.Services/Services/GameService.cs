@@ -4,6 +4,7 @@ using BattleSimulator.Entities.Enums;
 using BattleSimulator.Services.Interfaces;
 using Hangfire.Server;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -65,16 +66,9 @@ namespace BattleSimulator.Services.Services
                     }
                 }
 
+                SetTheVictor();
                 GetBattleLogs();
                 await _battleLogRepository.InsertBattleLogAsync(_battleLogList);
-
-                var sb = new StringBuilder();
-                foreach (var army in _armies)
-                {
-                    sb.AppendLine($"{army.Name} finished the battle with {army.Units}");
-                }
-
-                _logger.LogInformation(sb.ToString());
 
                 await _battleRepository.UpdateBattleAsync(_battleId, BattleStatus.Finished, _jobId);
             }
@@ -84,6 +78,21 @@ namespace BattleSimulator.Services.Services
             }
 
             _cts.Dispose();
+        }
+
+        private void SetTheVictor()
+        {
+            var victor = _armies.First(x => x.Units > 0);
+            var battleLog = new BattleLog
+            {
+                ActionTaken = $"{victor.Name} is victorious with {victor.Units} units remaining!",
+                BattleId = _battleId,
+                JobId = _jobId,
+                LogTime = DateTime.UtcNow,
+                BattleSnapshot = JsonConvert.SerializeObject(_armies)
+            };
+
+            _battleLogs.Enqueue(battleLog);
         }
 
         private async Task StartTheBattle()
