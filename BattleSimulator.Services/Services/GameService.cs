@@ -168,7 +168,7 @@ namespace BattleSimulator.Services.Services
             {
                 _armies.AddRange(_mapper.MapBattleLogToArmiesDtoList(log));
                 _logger.LogInformation($"Seems that the app crashed and the job resumed on restart. " +
-                    $"Entities are loaded from the latest log with battle id {log.BattleId}, job id {log.JobId} and time {log.LogTime}");
+                    $"Entities are loaded from the latest log with battle id {log.BattleId}, job id {log.JobId} and time {TimeZoneInfo.ConvertTimeFromUtc(log.LogTime, TimeZoneInfo.Local)}");
             }
             else
             {

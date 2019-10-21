@@ -81,13 +81,12 @@ namespace BattleSimulator.Services.Services
 
         public async Task<bool> UpdateBattleAsync(int battleId, BattleStatus battleStatus, string jobId = "")
         {
-            var success = false;
             var battle = await _trackingContext.Battles.FindAsync(battleId);
 
             if (battle is null)
             {
                 _logger.LogError($"No battle with id: {battleId} was found.");
-                return success;
+                return false;
             }
 
             battle.BattleStatus = battleStatus;
@@ -97,19 +96,9 @@ namespace BattleSimulator.Services.Services
                 battle.JobId = jobId;
             }
 
-            var result = await _trackingContext.SaveChangesAsync();
+            await _trackingContext.SaveChangesAsync();
 
-            if (result > 0)
-            {
-                _logger.LogInformation($"Battle with id {battleId} updated.");
-                success = true;
-            }
-            else
-            {
-                _logger.LogError($"Failed to update with id {battleId}");
-            }
-
-            return success;
+            return true;
         }
     }
 }

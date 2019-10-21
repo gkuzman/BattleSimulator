@@ -43,6 +43,13 @@ namespace BattleSimulator.Services.Services
                 return (ClearState(attacker), null);
             }
 
+            // reload if entity is loaded from json on app crash whilst reloading
+            if (attacker.ReloadTimeTotal > TimeSpan.Zero)
+            {
+                _logger.LogInformation($"{attacker.Name} is resuming reload with {attacker.ReloadTimeTotal - attacker.ElapsedReloadTime} ms remaining!");
+                await _reloadService.ReloadAsync(_attacker, cancellationToken);
+            }
+
             InitiateAttack(armies, out var attackLogs);
 
             await _reloadService.ReloadAsync(_attacker, cancellationToken);
