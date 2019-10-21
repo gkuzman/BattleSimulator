@@ -26,7 +26,6 @@ namespace BattleSimulator.Services.Services
         private int _battleId = 0;
         private string _jobId = string.Empty;
         private BlockingCollection<Func<Task<(ArmyDTO, BattleLog)>>> _tasks;
-        private int _test;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ConcurrentQueue<BattleLog> _battleLogs = new ConcurrentQueue<BattleLog>();
         private readonly List<BattleLog> _battleLogList = new List<BattleLog>();
@@ -117,7 +116,7 @@ namespace BattleSimulator.Services.Services
 
         private async ValueTask SaveLogsInBatch()
         {
-            if (_battleLogList.Count() > 10)
+            if (_battleLogList.Count() >= _armies.Count)
             {
                 await _battleLogRepository.InsertBattleLogAsync(_battleLogList);
                 _battleLogList.Clear();

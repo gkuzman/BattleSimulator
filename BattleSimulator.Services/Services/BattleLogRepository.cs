@@ -2,10 +2,7 @@
 using BattleSimulator.Entities.DB;
 using BattleSimulator.Services.Interfaces;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Services.Services

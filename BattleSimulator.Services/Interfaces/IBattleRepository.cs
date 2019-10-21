@@ -1,6 +1,5 @@
 ﻿using BattleSimulator.Entities.DB;
 using BattleSimulator.Entities.Enums;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Services.Interfaces
