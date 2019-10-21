@@ -38,6 +38,22 @@ namespace BattleSimulator.Services.Services
             return battle;
         }
 
+        public async Task<Battle> GetInProgressBattleAsync()
+        {
+            var battle = await _nonTrackingContext.Battles.Include(b => b.Armies).FirstOrDefaultAsync(x => x.BattleStatus == BattleStatus.InBattle);
+
+            if (battle is null)
+            {
+                _logger.LogWarning($"Existing battle with status: {BattleStatus.InBattle} not found");
+            }
+            else
+            {
+                _logger.LogInformation($"Found battle with status: {BattleStatus.InBattle} and id: {battle.Id}");
+            }
+
+            return battle;
+        }
+
         public async Task<BattleLog> GetBattleLog(int battleId, string jobId)
         {
             var query = _nonTrackingContext.BattleLogs.AsQueryable();

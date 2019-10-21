@@ -25,8 +25,7 @@ namespace BattleSimulator.Controllers
             return ProcessResult(result);
         }
 
-        // Seems that PUT is the most appropriate one, debatable with POST. Definitely not GET.
-        [HttpPut]
+        [HttpPost]
         public async Task<ActionResult> Start()
         {
             var request = new StartGameRequest();
@@ -47,7 +46,10 @@ namespace BattleSimulator.Controllers
         [HttpPut]
         public async Task<ActionResult> Reset()
         {
-            return await Task.FromResult(Ok());
+            var request = new StartGameRequest { Reset = true };
+            var result = await _mediator.Send(request);
+
+            return ProcessResult(result);
         }
 
         private ActionResult ProcessResult<T>(T result) where T : ResponseBase

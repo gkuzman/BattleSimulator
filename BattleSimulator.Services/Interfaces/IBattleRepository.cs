@@ -10,5 +10,6 @@ namespace BattleSimulator.Services.Interfaces
         Task<BattleLog> GetBattleLog(int battleId, string jobId);
         Task<int> CreateBattleAsync();
         Task<bool> UpdateBattleAsync(int battleId, BattleStatus battleStatus, string jobId = "");
+        Task<Battle> GetInProgressBattleAsync();
     }
 }

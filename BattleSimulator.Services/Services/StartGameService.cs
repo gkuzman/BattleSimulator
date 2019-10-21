@@ -30,6 +30,21 @@ namespace BattleSimulator.Services.Services
         public async Task<StartGameResponse> Handle(StartGameRequest request, CancellationToken cancellationToken)
         {
             var result = new StartGameResponse();
+
+            if (request.Reset)
+            {
+                await RestartAGame(result);
+            }
+            else
+            {
+                await StartAGame(result);
+            }
+            
+            return result;
+        }
+
+        private async Task StartAGame(StartGameResponse result)
+        {
             _logger.LogInformation("Attempting to start a game");
 
             var battle = await _battleRepository.GetInitializingBattleAsync();
@@ -37,18 +52,37 @@ namespace BattleSimulator.Services.Services
             if (battle is null)
             {
                 result.ErrorMessages.Add("There is no battle ready to start. Please add armies to initialize battle.");
-                return result;
             }
             else if (battle.Armies?.Count() < _options.Value.MinimumArmies)
             {
                 result.ErrorMessages.Add($"Cannot start a game with less than {_options.Value.MinimumArmies} in battle. Please add more armies to the current battle.");
-                return result;
             }
+            else
+            {
+                _jobClient.Schedule<IGameService>(x => x.StartGameAsync(null, battle.Id), TimeSpan.FromSeconds(1));
 
-            _jobClient.Schedule<IGameService>(x => x.StartGameAsync(null, battle.Id), TimeSpan.FromSeconds(1));
+                result.BattleId = battle.Id;
+            }
+        }
 
-            result.BattleId = battle.Id;
-            return result;
+        private async Task RestartAGame(StartGameResponse result)
+        {
+            _logger.LogInformation("Attempting to restart a game");
+
+            var battle = await _battleRepository.GetInProgressBattleAsync();
+
+            if (battle is null)
+            {
+                result.ErrorMessages.Add("There is no battle in progress.");
+            }
+            else
+            {
+                _jobClient.Delete(battle.JobId);
+                await _battleRepository.UpdateBattleAsync(battle.Id, Entities.Enums.BattleStatus.Initializing);
+                _jobClient.Schedule<IGameService>(x => x.StartGameAsync(null, battle.Id), TimeSpan.FromSeconds(1));
+
+                result.BattleId = battle.Id;
+            }
         }
     }
 }
